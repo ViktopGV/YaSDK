@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <meta charset="utf-8" />
+  <title>{{{ PRODUCT_NAME }}}</title>
+  <style>
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background: #292929;
+      overflow: hidden;
+    }
+
+    #unity-container {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100%;
+      height: 100%;
+      background: #000;
+    }
+
+    #unity-container.portrait {
+      aspect-ratio: 9 / 16;
+      width: 100%;
+      height: auto;
+      max-height: 100%;
+      max-width: calc(100vh * 9 / 16);
+    }
+
+    #unity-container.landscape {
+      aspect-ratio: 16 / 9;
+      width: 100%;
+      height: auto;
+      max-height: 100%;
+      max-width: calc(100vh * 16 / 9);
+    }
+
+    #unity-canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      background: #1f1f1f;
+
+
+    }
+
+    #unity-loading-bar {
+      position: absolute;
+      bottom: 50%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60%;
+      max-width: 560px;
+      height: 14px;
+      border-radius: 5px;
+      background: #555;
+    }
+
+    #unity-progress-bar-full {
+      width: 0%;
+      height: 100%;
+      border-radius: 5px;
+      background: #4CAF50;
+    }
+
+    #unity-warning {
+      position: absolute;
+      top: 0;
+      width: 100%;
+      background: red;
+      color: #fff;
+      text-align: center;
+      padding: 5px;
+      display: none;
+    }
+
+    .loader {
+      position: absolute;
+      top: -50px;
+      left: 36%;
+      color: #4CAF50;
+      width: 4px;
+      aspect-ratio: 1;
+      border-radius: 50%;
+      box-shadow: 19px 0 0 7px, 38px 0 0 3px, 57px 0 0 0;
+      animation: l21 1s infinite alternate linear;
+
+
+      margin: auto;
+    }
+
+    @keyframes l21 {
+      50% {
+        box-shadow: 19px 0 0 3px, 38px 0 0 7px, 57px 0 0 3px
+      }
+
+      100% {
+        box-shadow: 19px 0 0 0, 38px 0 0 3px, 57px 0 0 7px
+      }
+    }
+  </style>
+
+  <script async src="/sdk.js" onload="initSDK()"></script>
+</head>
+
+<body>
+  <div id="unity-container" class="portrait">
+    <canvas id="unity-canvas"></canvas>
+    <div id="unity-loading-bar">
+      <div id="unity-progress-bar-full"></div>
+      <div class="loader"></div>
+    </div>
+    <div id="unity-warning"></div>
+  </div>
+
+  <script>
+    async function initSDK() {
+      window.ysdk = await YaGames.init(); 
+      console.log('%c Yandex SDK initialized', 'background: #222; color: #bada55');
+
+      const [player, payments, flags] = await Promise.all([
+        window.ysdk.getPlayer(),
+        ysdk.getPayments(),
+        ysdk.getFlags(),
+      ]);
+
+      window.player = player;
+      window.payments = payments;
+      window.flags = flags;
+
+      console.log('%c Player, Payments, Flags initialized', 'background: #222; color: #bada55');
+    }
+
+
+    window.devicePixelRatio = 1;
+
+    const container = document.getElementById('unity-container');
+    const canvas = document.getElementById('unity-canvas');
+    const loadingBar = document.getElementById('unity-loading-bar');
+    const progressBarFull = document.getElementById('unity-progress-bar-full');
+    const warningBanner = document.getElementById('unity-warning');
+
+    function unityShowBanner(msg, type) {
+      warningBanner.innerHTML = msg;
+      warningBanner.style.display = 'block';
+    }
+
+    const buildUrl = "Build";
+    const loaderUrl = buildUrl + "/{{{ LOADER_FILENAME }}}";
+
+    const config = {
+      dataUrl: buildUrl + "/{{{ DATA_FILENAME }}}",
+      frameworkUrl: buildUrl + "/{{{ FRAMEWORK_FILENAME }}}",
+      codeUrl: buildUrl + "/{{{ CODE_FILENAME }}}",
+      streamingAssetsUrl: "StreamingAssets",
+      companyName: "{{{ COMPANY_NAME }}}",
+      productName: "{{{ PRODUCT_NAME }}}",
+      productVersion: "{{{ PRODUCT_VERSION }}}",
+      showBanner: unityShowBanner,
+    };
+
+    loadingBar.style.display = "block";
+
+    const script = document.createElement("script");
+    script.src = loaderUrl;
+    script.onload = () => {
+      createUnityInstance(canvas, config, (progress) => {
+        progressBarFull.style.width = (100 * progress) + "%";
+      }).then((unityInstance) => {
+        loadingBar.style.display = "none";
+      }).catch((message) => {
+        unityShowBanner(message, 'error');
+      });
+    };
+    document.body.appendChild(script);
+
+  </script>
+</body>
+
+</html>
