@@ -1,10 +1,16 @@
 mergeInto(LibraryManager.library, {
+  Yanedx_SendMetrica: function(goalPtr){
+    let goal = UTF8ToString(goalPtr);
+    sendMetrica(goal);
+  },
+
   Yandex_IsSdkReady: function () {
     if (
       typeof ysdk !== "undefined" &&
       typeof player !== "undefined" &&
       typeof payments !== "undefined" &&
-      typeof flags !== "undefined"
+      typeof flags !== "undefined" &&
+      typeof playerData != "undefined"
     )
       return true;
     return false;
@@ -54,6 +60,19 @@ mergeInto(LibraryManager.library, {
 
     let json = UTF8ToString(jsonPtr);
     player.setData(JSON.parse(json));
+  },
+
+  Yandex_GetPlayerDataSync: function () {
+    if (typeof playerData === "undefined") {
+      console.log("[YaSDK] playerData not initialized");
+      return;
+    }
+
+    const str = JSON.stringify(playerData);
+    const bufferSize = lengthBytesUTF8(str) + 1;
+    const buffer = _malloc(bufferSize);
+    stringToUTF8(str, buffer, bufferSize);
+    return buffer;
   },
 
   Yandex_GetPlayerData: function () {
@@ -146,7 +165,7 @@ mergeInto(LibraryManager.library, {
           SendMessage("YaSDK", "RewardOpen");
         },
         onRewarded: () => {
-          SendMessage("YaSDK", "Rewarded", JSON.stringify(rewarded));
+          SendMessage("YaSDK", "Rewarded", rewarded);
         },
         onClose: () => {
           SendMessage("YaSDK", "OnRewardClose");
@@ -236,11 +255,7 @@ mergeInto(LibraryManager.library, {
     }
 
     let leaderboardName = UTF8ToString(leaderboardNamePtr);
-    ysdk
-      .getLeaderboards()
-      .then((lb) => lb.setLeaderboardScore(leaderboardName, score))
-      .then(() => console.log("[YaSDK] Score set"))
-      .catch((e) => console.error(e));
+    ysdk.leaderboards.setScore(leaderboardName, score);
   },
 
   Yandex_GetPlayerEntry: function (leaderboardNamePtr, avatarSizePtr) {
@@ -278,7 +293,7 @@ mergeInto(LibraryManager.library, {
       console.log("[YaSDK] ysdk not initialized");
       return;
     }
-
+    
     let avatarSize = UTF8ToString(avatarSizePtr);
     let leaderboardName = UTF8ToString(leaderboardNamePtr);
 

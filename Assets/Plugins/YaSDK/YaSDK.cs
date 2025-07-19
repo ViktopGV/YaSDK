@@ -10,6 +10,7 @@ public static class YaSDK
     private static YaSDKEvents _sdk;
     private static Saves _saves = new();
     private static Environment _env = new();
+    private static bool _isSDKReady = false;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void Init()
@@ -18,13 +19,17 @@ public static class YaSDK
         _sdk = sdkEvents.AddComponent<YaSDKEvents>();
         UnityEngine.Object.DontDestroyOnLoad(sdkEvents);
         _sdk.YaSDKReady += _sdk_YaSDKReady;
+
+        _sdk.StartCoroutine(_sdk.WaitForSDKReady());
     }
 
     private static void _sdk_YaSDKReady()
     {
         SDKInitialized?.Invoke();
+        _isSDKReady = true;
     }
 
+    public static void SendMetrica(string goal) => _sdk.SendMetrica(goal);
     public static void ShowInterstitial(Action onOpen = null, Action<bool> onClose = null, Action<string> onError = null) => _sdk.ShowInterstitial(onOpen, onClose, onError);
     public static void ShowRewarded(Action<string> onRewarded, Action onOpen = null, Action onClose = null, Action<string> onError = null, string rewarded = "") => _sdk.ShowRewarded(rewarded, onRewarded, onOpen, onClose, onError);
 
@@ -32,28 +37,29 @@ public static class YaSDK
     public static void GameplayStart() => _sdk.GameplayStart();
     public static void GameplayStop() => _sdk.GameplayStop();
 
+    public static bool IsPlayerAuthorized() => _sdk.IsPlayerAuthorized();
     public static void SaveData() => _sdk.SavePlayerData();
     public static void GetPlayerData() => _sdk.GetPlayerData();
     public static string GetPlayerName() => _sdk.GetPlayerName();
     public static string GetPlayerPhoto() => _sdk.GetPlayerPhoto();
 
+    public static void SetScore(string leaderboard, long score) => _sdk.SetScore(leaderboard, score);
+    public static void GetPlayerEntry(string leaderboard, Action<LeaderboardEntry> onEntry, Action onNotPresent = null, string avatarSize = "small") => _sdk.GetPlayerEntry(leaderboard, onEntry, onNotPresent, avatarSize);
+    public static void GetLeaderboardEntries(string leaderboard, Action<LeaderboardEntries> onEntries, bool include = false, int around = 6, int top = 3, string avatarSize = "small")
+        => _sdk.GetLeaderboardEntries(leaderboard, onEntries, include, around, top, avatarSize);
+
     public static string GetFlag(string flag) => _sdk.GetFlag(flag);
 
-    public static void Buy(string purchaseID, Action<PurchaseData> onSuccses, Action<string> onError) => _sdk.Buy(purchaseID, onSuccses, onError);
+    public static void Buy(string purchaseID, Action<PurchaseData> onSuccses, Action<string> onError = null) => _sdk.Buy(purchaseID, onSuccses, onError);
     public static void ConsumePurchase(string token) => _sdk.ConsumePurchase(token);
     public static void Consume(Action<PurchaseList> onPurchased) => _sdk.Consume(onPurchased);
     public static void GetCatalog(Action<ProductList> onRecive, string iconSize = "small") => _sdk.GetCatalog(onRecive, iconSize);
-
-    public static void GetPlayerEntry(string leaderboard, Action<LeaderboardEntry> onEntry, Action onNotPresent = null, string avatarSize = "small") 
-        => _sdk.GetPlayerEntry(leaderboard, onEntry, onNotPresent, avatarSize);
-    public static void GetLeaderboardEntries(string leaderboard, Action<LeaderboardEntries> onEntries, bool include = false, int around = 6, int top = 3, string avatarSize = "small")
-        => _sdk.GetLeaderboardEntries(leaderboard, onEntries, include, around, top, avatarSize);
 
     public static long ServerTime() => _sdk.ServerTime();
 
     public static DeviceInfo GetDevice() => _sdk.GetDevice();
 
-    public static bool IsSDKReady() => _sdk.IsSDKReady();
+    public static bool IsSDKReady() => _isSDKReady;
 
 }
 
@@ -192,7 +198,7 @@ public class App
 [Serializable]
 public class I18n
 {
-    public string lang;
+    public string lang = "ru";
     public string tld;
 }
 
@@ -200,7 +206,7 @@ public class I18n
 public class Environment
 {
     public App app;
-    public I18n i18n;
+    public I18n i18n = new();
     public string payload;
 }
 #endregion

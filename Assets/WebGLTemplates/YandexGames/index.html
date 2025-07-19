@@ -82,8 +82,8 @@
 
     .loader {
       position: absolute;
-      top: -50px;
-      left: 36%;
+      bottom: 60px;
+      left: 38%;
       color: #4CAF50;
       width: 4px;
       aspect-ratio: 1;
@@ -121,20 +121,26 @@
 
   <script>
     async function initSDK() {
-      window.ysdk = await YaGames.init(); 
+      window.ysdk = await YaGames.init();
       console.log('%c Yandex SDK initialized', 'background: #222; color: #bada55');
 
-      const [player, payments, flags] = await Promise.all([
-        window.ysdk.getPlayer(),
-        ysdk.getPayments(),
-        ysdk.getFlags(),
+      const playerPromise = window.ysdk.getPlayer();
+      const paymentsPromise = window.ysdk.getPayments();
+      const flagsPromise = window.ysdk.getFlags();
+
+      const player = await playerPromise;
+      const [payments, flags, playerData] = await Promise.all([
+        paymentsPromise,
+        flagsPromise,
+        player.getData()
       ]);
 
       window.player = player;
       window.payments = payments;
       window.flags = flags;
+      window.playerData = playerData;
 
-      console.log('%c Player, Payments, Flags initialized', 'background: #222; color: #bada55');
+      console.log('%c Player, Payments, Flags, PlayerData initialized', 'background: #222; color: #bada55');
     }
 
 

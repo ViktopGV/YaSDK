@@ -6,23 +6,42 @@ using UnityEngine;
 public class YaSDKEvents : MonoBehaviour
 {
     public event Action YaSDKReady;
-    private void Start()
-    {
-        StartCoroutine(WaitForSDKReady());
-    }
 
-    private IEnumerator WaitForSDKReady()
+    public IEnumerator WaitForSDKReady()
     {
         yield return new WaitUntil(() => Yandex_IsSdkReady() == true);
         InitializeEnvironment();
-        GetPlayerData(onRecive: () => YaSDKReady?.Invoke());
+        JsonUtility.FromJsonOverwrite(Yandex_GetPlayerDataSync(), YaSDK.Saves);
+        YaSDKReady?.Invoke();
     }
 
 
     #region GameplayAPI
-    public void GameReady() => Yandex_GameReady();
-    public void GameplayStart() => Yandex_GameplayStart();
-    public void GameplayStop() => Yandex_GameplayStop();
+    public void GameReady()
+    {
+
+#if UNITY_WEBGL && !UNITY_EDITOR
+        Yandex_GameReady();
+#else 
+        Debug.Log("GameReady");
+#endif
+    }
+    public void GameplayStart()
+    {
+#if UNITY_WEBGL && !UNITY_EDITOR
+        Yandex_GameplayStart();
+#else
+        Debug.Log("GamePlay Start");
+#endif
+    }
+    public void GameplayStop()
+    {
+#if UNITY_WEBGL && !UNITY_EDITOR
+        Yandex_GameplayStop();
+#else
+        Debug.Log("GamePlay stop");
+#endif
+    }
 
     [DllImport("__Internal")]
     private static extern void Yandex_GameReady();
@@ -30,11 +49,12 @@ public class YaSDKEvents : MonoBehaviour
     private static extern void Yandex_GameplayStart();
     [DllImport("__Internal")]
     private static extern void Yandex_GameplayStop();
-    #endregion
+#endregion
 
     #region Player
     private Action onGetPlayerData;
 
+    public bool IsPlayerAuthorized() => Yandex_IsPlayerAuthorized();
     public void SavePlayerData()
     {
 #if UNITY_WEBGL && !UNITY_EDITOR
@@ -51,8 +71,8 @@ public class YaSDKEvents : MonoBehaviour
 #if UNITY_WEBGL && !UNITY_EDITOR
         Yandex_GetPlayerData(); 
 #else
-        PlayerPrefs.GetString("data");
-        OnPlayerGetData(JsonUtility.ToJson(YaSDK.Saves));
+        string data = PlayerPrefs.GetString("data");
+        OnPlayerGetData(data);
 #endif
     }
     public string GetPlayerName() => Yandex_GetPlayerName();
@@ -60,6 +80,7 @@ public class YaSDKEvents : MonoBehaviour
 
     private void OnPlayerGetData(string json)
     {
+        print(json);
         JsonUtility.FromJsonOverwrite(json, YaSDK.Saves);
         onGetPlayerData?.Invoke();
         onGetPlayerData = null;
@@ -73,17 +94,26 @@ public class YaSDKEvents : MonoBehaviour
     [DllImport("__Internal")]
     private static extern void Yandex_GetPlayerData();
     [DllImport("__Internal")]
+    private static extern string Yandex_GetPlayerDataSync();
+    [DllImport("__Internal")]
     private static extern string Yandex_GetPlayerName();
     [DllImport("__Internal")]
     private static extern string Yandex_GetPlayerPhoto(string size);
-#endregion
+    #endregion
 
     #region Flags
-    public string GetFlag(string flag) => Yandex_GetFlag(flag);
+    public string GetFlag(string flag)
+    {
 
+#if UNITY_WEBGL && !UNITY_EDITOR
+        return Yandex_GetFlag(flag);
+#else
+        return "90";
+#endif
+    }
     [DllImport("__Internal")]
     private static extern string Yandex_GetFlag(string flag);
-    #endregion
+#endregion
 
     #region Ads
     private Action onFSOpen = null;
@@ -119,6 +149,7 @@ public class YaSDKEvents : MonoBehaviour
             Yandex_ShowRewardAd(rewarded);
 #else
         Debug.Log("Реклама за вознаграждение!");
+        Rewarded(rewarded);
 #endif
     }
 
@@ -172,6 +203,12 @@ public class YaSDKEvents : MonoBehaviour
     private Action<LeaderboardEntries> onEntries;
     private Action<LeaderboardEntry> onPlayerEntry;
     private Action onPlayerNotPresent;
+
+    public void SetScore(string leaderboard, long score)
+    {
+        if (IsPlayerAuthorized())
+            Yandex_SetScore(leaderboard, score);
+    }
 
     public void GetPlayerEntry(string leaderboard, Action<LeaderboardEntry> onEntry, Action onNotPresent = null, string avatarSize = "small")
     {
@@ -284,11 +321,20 @@ public class YaSDKEvents : MonoBehaviour
     #endregion
 
     #region Environment
-    public void InitializeEnvironment() => JsonUtility.FromJsonOverwrite(Yandex_GetEnvironment(), YaSDK.Env);
+    public void InitializeEnvironment()
+    {
+
+#if UNITY_WEBGL && !UNITY_EDITOR
+        JsonUtility.FromJsonOverwrite(Yandex_GetEnvironment(), YaSDK.Env);
+#else
+
+#endif
+
+    }
 
     [DllImport("__Internal")]
     private static extern string Yandex_GetEnvironment();
-    #endregion
+#endregion
 
     #region ServerTime
     public long ServerTime()
@@ -321,7 +367,15 @@ public class YaSDKEvents : MonoBehaviour
     private static extern string Yandex_GetDeviceInfo();
     #endregion
 
-    public bool IsSDKReady() => Yandex_IsSdkReady();
+#if UNITY_WEBGL && !UNITY_EDITOR
     [DllImport("__Internal")]
     private static extern bool Yandex_IsSdkReady();
+#else
+    private static bool Yandex_IsSdkReady() => true;
+#endif
+
+    public void SendMetrica(string goal) => Yanedx_SendMetrica(goal);
+
+    [DllImport("__Internal")]
+    private static extern void Yanedx_SendMetrica(string goal);
 }
