@@ -11,8 +11,13 @@ public class YaSDKEvents : MonoBehaviour
     {
         yield return new WaitUntil(() => Yandex_IsSdkReady() == true);
         InitializeEnvironment();
+#if UNITY_WEBGL && !UNITY_EDITOR
         JsonUtility.FromJsonOverwrite(Yandex_GetPlayerDataSync(), YaSDK.Saves);
+#else
+        GetPlayerData();
+#endif
         YaSDKReady?.Invoke();
+        SavePlayerData();
     }
 
 
@@ -22,7 +27,7 @@ public class YaSDKEvents : MonoBehaviour
 
 #if UNITY_WEBGL && !UNITY_EDITOR
         Yandex_GameReady();
-#else 
+#else
         Debug.Log("GameReady");
 #endif
     }
@@ -62,6 +67,7 @@ public class YaSDKEvents : MonoBehaviour
 #else
         PlayerPrefs.SetString("data", JsonUtility.ToJson(YaSDK.Saves));
         PlayerPrefs.Save();
+        Debug.Log(PlayerPrefs.GetString("data"));
 #endif
 
     }
@@ -80,7 +86,6 @@ public class YaSDKEvents : MonoBehaviour
 
     private void OnPlayerGetData(string json)
     {
-        print(json);
         JsonUtility.FromJsonOverwrite(json, YaSDK.Saves);
         onGetPlayerData?.Invoke();
         onGetPlayerData = null;

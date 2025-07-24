@@ -38,7 +38,7 @@ public static class YaSDK
     public static void GameplayStop() => _sdk.GameplayStop();
 
     public static bool IsPlayerAuthorized() => _sdk.IsPlayerAuthorized();
-    public static void SaveData() => _sdk.SavePlayerData();
+    public static void SavePlayerData() => _sdk.SavePlayerData();
     public static void GetPlayerData() => _sdk.GetPlayerData();
     public static string GetPlayerName() => _sdk.GetPlayerName();
     public static string GetPlayerPhoto() => _sdk.GetPlayerPhoto();
