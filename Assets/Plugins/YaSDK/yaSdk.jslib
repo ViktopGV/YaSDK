@@ -270,6 +270,8 @@ mergeInto(LibraryManager.library, {
       return;
     }
 
+    if(player.isAuthorized() === false) return;
+
     let leaderboardName = UTF8ToString(leaderboardNamePtr);
     ysdk.leaderboards.setScore(leaderboardName, score);
   },

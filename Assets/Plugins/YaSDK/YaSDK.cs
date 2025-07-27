@@ -29,6 +29,8 @@ public static class YaSDK
         _isSDKReady = true;
     }
 
+    public static void SetSaves(Saves newSaves) => _saves = newSaves;
+
     public static void SendMetrica(string goal) => _sdk.SendMetrica(goal);
     public static void ShowInterstitial(Action onOpen = null, Action<bool> onClose = null, Action<string> onError = null) => _sdk.ShowInterstitial(onOpen, onClose, onError);
     public static void ShowRewarded(Action<string> onRewarded, Action onOpen = null, Action onClose = null, Action<string> onError = null, string rewarded = "") => _sdk.ShowRewarded(rewarded, onRewarded, onOpen, onClose, onError);
@@ -39,7 +41,7 @@ public static class YaSDK
 
     public static bool IsPlayerAuthorized() => _sdk.IsPlayerAuthorized();
     public static void SavePlayerData() => _sdk.SavePlayerData();
-    public static void GetPlayerData(Action onRecive = null) => _sdk.GetPlayerData(onRecive);
+    public static void GetPlayerData(Action<Saves> onRecive = null) => _sdk.GetPlayerData(onRecive);
     public static string GetPlayerName() => _sdk.GetPlayerName();
     public static string GetPlayerPhoto() => _sdk.GetPlayerPhoto();
     public static void OpenAuthDialog(Action onAuth = null, Action onReject = null) => _sdk.OpenAuthDialog(onAuth, onReject);

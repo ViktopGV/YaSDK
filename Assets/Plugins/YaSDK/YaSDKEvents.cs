@@ -57,7 +57,7 @@ public class YaSDKEvents : MonoBehaviour
 #endregion
 
     #region Player
-    private Action onGetPlayerData;
+    private Action<Saves> onGetPlayerData;
     private Action onPlayerAuth;
     private Action onPlayerAuthReject;
 
@@ -72,7 +72,7 @@ public class YaSDKEvents : MonoBehaviour
 #endif
 
     }
-    public void GetPlayerData(Action onRecive = null) 
+    public void GetPlayerData(Action<Saves> onRecive = null) 
     { 
         onGetPlayerData = onRecive;
 #if UNITY_WEBGL && !UNITY_EDITOR
@@ -93,8 +93,9 @@ public class YaSDKEvents : MonoBehaviour
 
     private void OnPlayerGetData(string json)
     {
-        JsonUtility.FromJsonOverwrite(json, YaSDK.Saves);
-        onGetPlayerData?.Invoke();
+        //JsonUtility.FromJsonOverwrite(json, YaSDK.Saves);
+        Saves data = JsonUtility.FromJson<Saves>(json);
+        onGetPlayerData?.Invoke(data);
         onGetPlayerData = null;
     }
 
