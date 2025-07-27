@@ -39,9 +39,10 @@ public static class YaSDK
 
     public static bool IsPlayerAuthorized() => _sdk.IsPlayerAuthorized();
     public static void SavePlayerData() => _sdk.SavePlayerData();
-    public static void GetPlayerData() => _sdk.GetPlayerData();
+    public static void GetPlayerData(Action onRecive = null) => _sdk.GetPlayerData(onRecive);
     public static string GetPlayerName() => _sdk.GetPlayerName();
     public static string GetPlayerPhoto() => _sdk.GetPlayerPhoto();
+    public static void OpenAuthDialog(Action onAuth = null, Action onReject = null) => _sdk.OpenAuthDialog(onAuth, onReject);
 
     public static void SetScore(string leaderboard, long score) => _sdk.SetScore(leaderboard, score);
     public static void GetPlayerEntry(string leaderboard, Action<LeaderboardEntry> onEntry, Action onNotPresent = null, string avatarSize = "small") => _sdk.GetPlayerEntry(leaderboard, onEntry, onNotPresent, avatarSize);
@@ -52,7 +53,7 @@ public static class YaSDK
 
     public static void Buy(string purchaseID, Action<PurchaseData> onSuccses, Action<string> onError = null) => _sdk.Buy(purchaseID, onSuccses, onError);
     public static void ConsumePurchase(string token) => _sdk.ConsumePurchase(token);
-    public static void Consume(Action<PurchaseList> onPurchased) => _sdk.Consume(onPurchased);
+    public static void GetPurchased(Action<PurchaseList> onPurchased) => _sdk.GetPurchased(onPurchased);
     public static void GetCatalog(Action<ProductList> onRecive, string iconSize = "small") => _sdk.GetCatalog(onRecive, iconSize);
 
     public static long ServerTime() => _sdk.ServerTime();

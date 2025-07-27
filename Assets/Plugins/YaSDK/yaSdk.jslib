@@ -1,5 +1,5 @@
 mergeInto(LibraryManager.library, {
-  Yanedx_SendMetrica: function(goalPtr){
+  Yanedx_SendMetrica: function (goalPtr) {
     let goal = UTF8ToString(goalPtr);
     sendMetrica(goal);
   },
@@ -49,9 +49,25 @@ mergeInto(LibraryManager.library, {
     return player.isAuthorized();
   },
 
-  //authWindow
+  Yandex_OpenAuthDialog: function () {
+    if (typeof ysdk === "undefined") {
+      console.log("[YaSDK] ysdk not initialized");
+      return;
+    }
 
-  //no callbacks
+    if(player.isAuthorized() === true) {
+      SendMessage("YaSDK", "OnPlayerAuthorizedReject");
+      return;
+    }
+
+    ysdk.auth.openAuthDialog().then(() => {
+      SendMessage("YaSDK", "OnPlayerAuthorized");
+    }).catch(() => {
+      SendMessage("YaSDK", "OnPlayerAuthorizedReject");
+
+    });
+  },
+
   Yandex_SetPlayerData: function (jsonPtr) {
     if (typeof player === "undefined") {
       console.log("[YaSDK] player not initialized");
@@ -293,7 +309,7 @@ mergeInto(LibraryManager.library, {
       console.log("[YaSDK] ysdk not initialized");
       return;
     }
-    
+
     let avatarSize = UTF8ToString(avatarSizePtr);
     let leaderboardName = UTF8ToString(leaderboardNamePtr);
 

@@ -58,6 +58,8 @@ public class YaSDKEvents : MonoBehaviour
 
     #region Player
     private Action onGetPlayerData;
+    private Action onPlayerAuth;
+    private Action onPlayerAuthReject;
 
     public bool IsPlayerAuthorized() => Yandex_IsPlayerAuthorized();
     public void SavePlayerData()
@@ -67,7 +69,6 @@ public class YaSDKEvents : MonoBehaviour
 #else
         PlayerPrefs.SetString("data", JsonUtility.ToJson(YaSDK.Saves));
         PlayerPrefs.Save();
-        Debug.Log(PlayerPrefs.GetString("data"));
 #endif
 
     }
@@ -83,12 +84,34 @@ public class YaSDKEvents : MonoBehaviour
     }
     public string GetPlayerName() => Yandex_GetPlayerName();
     public string GetPlayerPhoto(string size = "small") => Yandex_GetPlayerPhoto(size);
+    public void OpenAuthDialog(Action onAuth=null, Action onReject = null)
+    {
+        onPlayerAuth = onAuth;
+        onPlayerAuthReject = onReject;
+        Yandex_OpenAuthDialog();
+    }
 
     private void OnPlayerGetData(string json)
     {
         JsonUtility.FromJsonOverwrite(json, YaSDK.Saves);
         onGetPlayerData?.Invoke();
         onGetPlayerData = null;
+    }
+
+    private void OnPlayerAuthorized()
+    {
+        onPlayerAuth?.Invoke();
+
+        onPlayerAuth = null;
+        onPlayerAuthReject = null;
+    }
+
+    private void OnPlayerAuthorizedReject()
+    {
+        onPlayerAuthReject?.Invoke();
+
+        onPlayerAuth = null;
+        onPlayerAuthReject = null;
     }
 
 
@@ -104,6 +127,8 @@ public class YaSDKEvents : MonoBehaviour
     private static extern string Yandex_GetPlayerName();
     [DllImport("__Internal")]
     private static extern string Yandex_GetPlayerPhoto(string size);
+    [DllImport("__Internal")]
+    private static extern void Yandex_OpenAuthDialog();
     #endregion
 
     #region Flags
@@ -180,7 +205,7 @@ public class YaSDKEvents : MonoBehaviour
 
     public void Buy(string purchaseID, Action<PurchaseData> onSuccses, Action<string> onError) { onPurchaseSuccsess = onSuccses; onPurchaseReject = onError; Yandex_Purchase(purchaseID); }
     public void ConsumePurchase(string token) => Yandex_ConsumePurchase(token);
-    public void Consume(Action<PurchaseList> onPurchased) { onPurchasesRecive = onPurchased; Yandex_GetPurchased(); }
+    public void GetPurchased(Action<PurchaseList> onPurchased) { onPurchasesRecive = onPurchased; Yandex_GetPurchased(); }
     public void GetCatalog(Action<ProductList> onRecive, string iconSize = "small") { onCatalogRecive = onRecive; Yandex_GetCatalog(iconSize); }
 
     private void OnPurchaseSuccess(string json) { onPurchaseSuccsess?.Invoke(JsonUtility.FromJson<PurchaseData>(json)); onPurchaseSuccsess = null; }
