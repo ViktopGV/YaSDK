@@ -11,31 +11,25 @@ YaSDK - плагин для Unity, предоставляющий интегра
 - [Серверное время](#Серверное-время)
 
 # Инициализация 
-Плагин инициализируется автоматически (при условии использования шаблона предоставляемого плагином). 
-Чтобы проверить что плагин и СДК готовы к работе, используйте: 
-```c#
-YaSDK.IsSDKReady()
-```
-Метод вернет `true` либо `false`. 
-##### Пример использования
+Плагин инициализируется автоматически (при условии использования шаблона предоставляемого плагином).  Обычно СДК Яндекс.Игр инициализируется быстрее загрузки первой сцены, но для подстраховки можно(нужно) использовать метод `void WhenReady(Action onSDKInitialized)`. Метод принимает колбэк, который будет выполнен когда СДК Инициализировано. Если СДК уже готов и был вызван этот метод, то колбэк отработает сразу.
+##### Пример
 ```c#
 public class Bootstrap : MonoBehaviour
 {
     private void Awake()
     {
-        StartCoroutine(WaitForSDK());       
+        YaSDK.WhenReady(() => SceneManager.LoadScene(1));
+        // или 
+        YaSDK.WhenReady(OnSDKReady);
     }
-    
-    IEnumerator WaitForSDK()
-	{
-    yield return new WaitUntil(() => YaSDK.IsSDKReady() == true);
-    SceneManager.LoadScene(1);
-    // Или вызывайте метод старта игры, если загрузочной сцены нет
-	}
+
+    private void OnSDKReady()
+    {
+        Debug.Log("SDK Ready");
+        SceneManager.LoadScene(1);
+    }
 }
-
 ```
-
 
 # Разметка геймплея
 #### GameReady
@@ -70,7 +64,8 @@ public class CarData
 **Обязательно помечайте свои классы `[Serializable]`!**
 Во время игры изменяете поля, как вам нужно:
 ```c#
-public void CarUpgrade(){
+public void CarUpgrade()
+{
 	YaSDK.Saves.Car.Level += 1;
 	YaSDK.Saves.Car.MaxSpeed += 5;
 }

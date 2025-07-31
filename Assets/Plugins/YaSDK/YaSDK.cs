@@ -3,7 +3,6 @@ using UnityEngine;
 
 public static class YaSDK
 {
-    public static event Action SDKInitialized;
     public static Saves Saves => _saves;
     public static Environment Env => _env;
 
@@ -11,6 +10,7 @@ public static class YaSDK
     private static Saves _saves = new();
     private static Environment _env = new();
     private static bool _isSDKReady = false;
+    private static Action SDKInitialized;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
     private static void Init()
@@ -25,8 +25,9 @@ public static class YaSDK
 
     private static void _sdk_YaSDKReady()
     {
-        SDKInitialized?.Invoke();
         _isSDKReady = true;
+        SDKInitialized?.Invoke();
+        SDKInitialized = null;
     }
 
     public static void SetSaves(Saves newSaves) => _saves = newSaves;
@@ -62,7 +63,13 @@ public static class YaSDK
 
     public static DeviceInfo GetDevice() => _sdk.GetDevice();
 
-    public static bool IsSDKReady() => _isSDKReady;
+    public static void WhenReady(Action onSDKInitialized)
+    {
+        if (_isSDKReady == true)        
+            onSDKInitialized?.Invoke();
+        else
+            SDKInitialized = onSDKInitialized;
+    }
 
 }
 

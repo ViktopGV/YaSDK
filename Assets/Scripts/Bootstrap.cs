@@ -6,12 +6,13 @@ public class Bootstrap : MonoBehaviour
 {
     private void Awake()
     {
-        StartCoroutine(WaitForSDK());
+        YaSDK.WhenReady(() => SceneManager.LoadScene(1));
+        YaSDK.WhenReady(OnSDKReady);
     }
 
-    IEnumerator WaitForSDK()
+    private void OnSDKReady()
     {
-        yield return new WaitUntil(() => YaSDK.IsSDKReady() == true);
+        Debug.Log("SDK Ready");
         SceneManager.LoadScene(1);
     }
 }
