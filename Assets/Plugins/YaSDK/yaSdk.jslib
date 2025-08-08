@@ -380,7 +380,7 @@ mergeInto(LibraryManager.library, {
       return;
     }
 
-    var str = ysdk.deviceInfo;
+    var str = ysdk.deviceInfo.type;
     var bufferSize = lengthBytesUTF8(str) + 1;
     var buffer = _malloc(bufferSize);
     stringToUTF8(str, buffer, bufferSize);
